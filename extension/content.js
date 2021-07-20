@@ -1,52 +1,63 @@
-const delegate = (selector) => (cb) => (e) => e.target.matches(selector) && cb(e);
-const inputDelegate = delegate('input[type="text"]');
+const wordsForChange = {
+  Cat: 'Dog,Rat,bat ',
+  Helo: 'hello,Help,Hell ',
+  heldp: 'help,held,hello '
+}
+
+let valueForChange = '';
+let start;
+document.body.addEventListener('input', (event) => {
+  console.log(event)
+  if (event.data !== ' ') {
+    let movePopUp = document.getElementById('popup_menu_for_change')
+    if (movePopUp) {
+      movePopUp.remove();
+      valueForChange = '';
+    }
+    valueForChange += event.data
+  } else {
+    let movePopUp = document.getElementById('popup_menu_for_change')
+    if (movePopUp) {
+      movePopUp.remove();
+      valueForChange = '';
+    } else if (valueForChange in wordsForChange) {
+      event.target.id = 'change';
+      let inputForChange = document.getElementById('change');
+      start = inputForChange.selectionStart;
+      let top = inputForChange.getBoundingClientRect().y;
+      let left = inputForChange.getBoundingClientRect().x + inputForChange.selectionEnd * 7;
+      let addData = wordsForChange[valueForChange].split(',').map(data => `<p class="popup_menu_for_change_variants">${data}</p>`)
+      document.body.insertAdjacentHTML('afterbegin',
+        `<div id="popup_menu_for_change">
+ ${addData.toString().replace(/,/g, '')}
+</div>`)
+      let movePopUp = document.getElementById('popup_menu_for_change');
+      movePopUp.addEventListener('click', removeElement);
+      movePopUp.style.top = top + +getComputedStyle(event.path[0]).height.replace('px', '') + 'px';
+      movePopUp.style.left = left + 'px';
+    } else {
+      valueForChange = '';
+    }
+
+  }
+})
+
 function removeElement(event) {
   let inputValue = document.getElementById('change');
-  inputValue.value = inputValue.value .replace(valueForChange,event.target.innerHTML)
+
+  if (inputValue.value) {
+    let substrForRest = inputValue.value.substr(0, start - valueForChange.length - 1);
+    let valueForReplace = inputValue.value.substr(start - valueForChange.length - 1)
+    inputValue.value = substrForRest + valueForReplace.replace(valueForChange, event.target.innerText)
+  } else {
+    inputValue.innerText = inputValue.innerText.replace(valueForChange, event.target.innerText)
+  }
   document.getElementById("popup_menu_for_change").remove();
-  window.setTimeout(function ()
-  {
+  window.setTimeout(function () {
     inputValue.focus();
   }, 0);
+  inputValue.selectionStart = start + (event.target.innerText.length - valueForChange.length);
+  inputValue.selectionEnd = start + (event.target.innerText.length - valueForChange.length);
   inputValue.removeAttribute('id');
+  valueForChange = '';
 }
-let valueForChange='';
-const wordsForChange = {
-  Cat: 'Dog ,Rat ,bat ',
-  Helo: 'hello ,Help ,Hell ',
-  heldp: 'help ,held ,hello '
-}
-let keyWord='';
-document.body.addEventListener('input', inputDelegate((el) => {
-    el.target.id='change';
-    let top = el.path[0].getBoundingClientRect().y;
-    let left = el.path[0].getBoundingClientRect().x+el.path[0].selectionEnd*7;
-    for (const [key, value] of Object.entries(wordsForChange)) {
-      if (el.target.value.endsWith(key + ' ')) {
-        console.log(el.target.value)
-        keyWord=key;
-        valueForChange=el.target.value.split(' ')[el.target.value.split(' ').length-2] + ' ';
-        document.body.insertAdjacentHTML('afterbegin',
-          `<div id="popup_menu_for_change">
-                    <p class="popup_menu_for_change_variants">${value.split(',')[0]}</p>                  
-                    <p class="popup_menu_for_change_variants">${value.split(',')[1]}</p>                  
-                    <p class="popup_menu_for_change_variants">${value.split(',')[2]}</p>                  
-</div>`)
-        let movePopUp = document.getElementById('popup_menu_for_change');
-        movePopUp.addEventListener('click',removeElement);
-        movePopUp.style.top = top+ +getComputedStyle(el.path[0]).height.replace('px','')+'px';
-        movePopUp.style.left = left +'px';
-      }
-    }
-    if (!el.target.value.endsWith(keyWord + ' ') && document.getElementById("popup_menu_for_change")){
-      document.getElementById("popup_menu_for_change").remove();
-    }
-  }
-));
-
-
-
-
-
-
-
