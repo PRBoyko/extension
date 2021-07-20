@@ -54,10 +54,22 @@ function removeElement(event) {
   }
   document.getElementById("popup_menu_for_change").remove();
   window.setTimeout(function () {
-    inputValue.focus();
+    setCaretToEnd(inputValue)
   }, 0);
   inputValue.selectionStart = start + (event.target.innerText.length - valueForChange.length);
   inputValue.selectionEnd = start + (event.target.innerText.length - valueForChange.length);
   inputValue.removeAttribute('id');
   valueForChange = '';
+}
+function setCaretToEnd(target) {
+  const range = document.createRange();
+  console.log(range)
+  const sel = window.getSelection();
+  range.selectNodeContents(target);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  target.focus();
+  range.detach();
+  target.scrollTop = target.scrollHeight;
 }
